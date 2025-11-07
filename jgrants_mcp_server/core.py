@@ -93,10 +93,10 @@ async def _search_subsidies_internal(
         params["target_number_of_employees"] = target_number_of_employees
     if target_area_search:
         params["target_area_search"] = target_area_search
-    
+
     url = f"{API_BASE_URL}/subsidies"
-    
-    
+
+
     data = await _get_json(url, params=params)
     if "error" in data:
         return data
@@ -167,16 +167,16 @@ async def search_subsidies(
     - 各補助金の詳細は jGrants ポータル (https://www.jgrants-portal.go.jp/grants/view/{subsidy_id}) で確認できます
     - 出典表示: 本ツールで取得した情報を利用・公開する際は、
       「Jグランツ（jGrants）からの出典」である旨を明記してください。
-    - デフォルトのkeywordは「事業」にしています。 
+    - デフォルトのkeywordは「事業」にしています。
 
     必須パラメータ（API仕様上）
     - keyword: 検索キーワード（2〜255文字）
     - acceptance: 受付期間フィルタ（0 または 1）
       ※ 本ツールでは既定値 = 1 を用意しているため、省略時は 1 として扱います。
-    
+
     オプションパラメータ（本ツールの引数）
     - use_purpose, industry, target_number_of_employees, target_area_search, sort, order
-    
+
     """
     # 必須パラメータのバリデーション（API仕様準拠）
     if not isinstance(keyword, str) or not keyword.strip() or not (2 <= len(keyword.strip()) <= 255):
@@ -325,7 +325,7 @@ async def get_subsidy_overview(output_format: str = "json") -> Dict[str, Any]:
                         "title": subsidy.get("title"),
                         "max_amount": amount
                     })
-            except:
+            except Exception:
                 stats["by_amount_range"]["unspecified"] += 1
         else:
             stats["by_amount_range"]["unspecified"] += 1
@@ -413,10 +413,10 @@ def _convert_statistics_to_csv(stats: Dict[str, Any]) -> Dict[str, Any]:
 async def get_subsidy_detail(subsidy_id: str) -> Dict[str, Any]:
     """
     補助金の詳細情報を取得し、添付ファイルを自動的にダウンロードします。
-    
+
     Args:
         subsidy_id: 補助金ID（例: "a0WJ200000CDR9HMAX"）
-    
+
     Returns:
         以下の構造を持つ辞書:
         {
@@ -562,30 +562,30 @@ async def get_subsidy_detail(subsidy_id: str) -> Dict[str, Any]:
                                 # BASE64データの検証
                                 if not isinstance(file_base64, str) or len(file_base64.strip()) == 0:
                                     raise ValueError("無効なBASE64データ")
-                                
+
                                 # ファイル名のサニタイズ（日本語を保持）
                                 import re
-                                
+
                                 # 日本語文字（ひらがな、カタカナ、漢字）を保持しつつ、危険な文字を除去
                                 # Windowsで使えない文字: < > : " | ? * \ /
                                 # パス区切り文字も除去
                                 dangerous_chars = r'[<>:"|?*\\/]'
                                 safe_file_name = re.sub(dangerous_chars, '_', file_name)
-                                
+
                                 # 空白を_に変換
                                 safe_file_name = safe_file_name.replace(' ', '_')
-                                
+
                                 # ファイル名が空になった場合のフォールバック
                                 if not safe_file_name or safe_file_name == '_':
                                     safe_file_name = f"{base_name}_{idx+1}.pdf"
-                                
+
                                 # BASE64デコード
                                 file_content = base64.b64decode(file_base64.strip())
-                                
+
                                 # 空ファイルチェック
                                 if len(file_content) == 0:
                                     raise ValueError("デコード後のファイルが空です")
-                                
+
                                 file_path = subsidy_dir / safe_file_name
 
                                 with open(file_path, "wb") as f:
@@ -602,7 +602,7 @@ async def get_subsidy_detail(subsidy_id: str) -> Dict[str, Any]:
                                             "subsidy_id": subsidy_id,
                                             "filename": safe_file_name
                                         },
-                                        "description": f"このファイルにアクセスするには get_file_content ツールを使用してください"
+                                        "description": "このファイルにアクセスするには get_file_content ツールを使用してください"
                                     }
                                 })
                             except Exception as e:
